@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="08ab5141-1fc8-45bc-bfc7-7ba67f8ee1f1" basePath="crud">
+		<http:listener-connection host="0.0.0.0" port="8081"/>
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="000677b9-71e6-4049-8a96-d1a9f834dd7b" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" database="muledb" password="admin"/>
+	</db:config>
+	<db:config name="Database_Config1" doc:name="Database Config" doc:id="1855b2a2-ae83-4363-b5fe-b52fe09c1358" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="admin" database="muledb" />
+	</db:config>
+	<db:config name="Database_Config2" doc:name="Database Config" doc:id="feb8ebbd-024a-47a1-9531-4cf3711b05d9" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="admin" database="muledb" />
+	</db:config>
+	<db:config name="Database_Config3" doc:name="Database Config" doc:id="761aa835-ab54-40f3-9b42-8b22d49ccc61" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="admin" database="muledb" />
+	</db:config>
+	<db:config name="Database_Config4" doc:name="Database Config" doc:id="c9cd12e0-f53b-40b9-827b-823e769b48bc" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="admin" database="muledb" />
+	</db:config>
+	<flow name="project1Flow" doc:id="09cc0f8c-9e61-415f-bf56-6e9976aafcf5" >
+		<http:listener doc:name="Listener" doc:id="2d66345e-35a4-41fd-9f23-111f9c2d1f40" config-ref="HTTP_Listener_config" path="crud">
+			<ee:repeatable-file-store-stream bufferUnit="MB" />
+		</http:listener>
+		<db:select doc:name="Select" doc:id="6ed611d5-473a-4792-a430-3c22b4f44273" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM company;]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="a54a671b-3590-4957-b652-ce71139d5e21" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="project1Flow1" doc:id="9815a710-caee-4534-bc59-3346e3a1f946" >
+		<http:listener doc:name="Listener" doc:id="befe789a-0b8f-4211-91ce-38530de89316" config-ref="HTTP_Listener_config" path="/crud/{id}"/>
+		<db:select doc:name="Select" doc:id="daa229df-f42e-4334-a913-62e555aebee6" config-ref="Database_Config1">
+			<db:sql ><![CDATA[SELECT * from company where Id=:id;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+ id:attributes.uriParams.id,
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="9ed120d7-f93a-4952-96ef-4b36b84fc6db" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="project1Flow2" doc:id="92305aff-0624-4f70-a563-6195a1ff38fc" >
+		<http:listener doc:name="Listener" doc:id="1289278e-7637-41ef-87ba-4796f5998244" config-ref="HTTP_Listener_config" path="/crudinsert"/>
+		<db:insert doc:name="Insert" doc:id="5d33d56b-3321-4037-a1cb-604ddac9585b" config-ref="Database_Config2">
+			<db:sql ><![CDATA[Insert into company(Id,name) values (:id,:name);]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: payload.id,
+	name: payload.name
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="a957aee8-b717-4949-8d95-db6cf1c86232" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="project1Flow3" doc:id="99789b97-f29d-4578-9465-403905ec1e71" >
+		<http:listener doc:name="Listener" doc:id="0e89475f-b7d1-49ae-b81f-8c1fa64c7e99" config-ref="HTTP_Listener_config" path="/crudupdate"/>
+		<db:update doc:name="Update" doc:id="fdf823ab-184c-4a45-838e-6c9eb8b4679f" config-ref="Database_Config3">
+			<db:sql ><![CDATA[Update company set name=:name where id=:id;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id:payload.id,
+	name:payload.name
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="08224ab4-bc88-4205-a5aa-d4d91779c4c9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="project1Flow4" doc:id="a6ff8a39-e774-4c42-8495-3cee4dd836a7" >
+		<http:listener doc:name="Listener" doc:id="69c36d88-799b-4f04-a871-e3aa03c561cd" config-ref="HTTP_Listener_config" path="cruddelete/{id}"/>
+		<db:delete doc:name="Delete" doc:id="c2143be1-1c5c-45a6-9802-549fa73c23af" config-ref="Database_Config4">
+			<db:sql ><![CDATA[Delete from company where id=:id;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: attributes.uriParams.id,
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="d80ba92d-1086-436d-8936-be75fe6bd9f1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
